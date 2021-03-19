@@ -42,6 +42,11 @@
 *.idb
 *.pdb
 
+# Assembly
+*.COM
+*.OBJ
+*.EXE
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd
