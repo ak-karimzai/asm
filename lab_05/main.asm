@@ -6,10 +6,10 @@ data_seg segment para public 'data'
     rows db 4
     cols db 8
     matrix db 81 dup(0)
-    msg1 db "number of rows: $"
-    msg2 db "number of cols: $"
-    msg3 db "Elements: $"
-    err_msg db "Incorect Input! $"
+    msg1 db 13, 10, "number of rows: $"
+    msg2 db 13, 10, "number of cols: $"
+    msg3 db 13, 10, "Elements: $"
+    err_msg db 13, 10, "Incorect Input! $"
     elem_sum db 0
     new_line_sym db 13, 10, '$'
 data_seg ends
@@ -17,23 +17,12 @@ data_seg ends
 code_seg segment para public 'code'
     ASSUME SS:stk_seg, DS:data_seg, CS:code_seg
 
-new_line proc public
-    push dx
-    push ax
-    mov dx, offset ds:new_line_sym
-    mov ah, 09
-    int 21h
-    pop ax
-    pop dx
-    ret
-new_line endp
-
 read_matrix proc public
     mov cl, ds:rows
     mov si, 0
     mov ah, 08
 _loop_1:
-    push cx
+    mov di, cx
     mov cl, ds:cols
 
 _loop_2:
@@ -44,8 +33,16 @@ _loop_2:
 
     loop _loop_2
 
-    call new_line
-    pop cx
+    mov bx, ax ; push
+
+    mov dx, offset ds:new_line_sym
+    mov ah, 09
+    int 21h
+
+    mov ax, bx ; pop
+
+    mov cx, di
+    
     loop _loop_1
     ret
 read_matrix endp
@@ -55,13 +52,14 @@ display_matrix proc public
     mov ah, 09
     int 21h
 
-    call new_line
+    mov dx, offset ds:new_line_sym
+    int 21h
 
     mov cl, ds:rows
     mov si, 0
     mov ah, 2
 _loop_1:
-    push cx
+    mov es, cx
     mov cl, ds:cols
 
 _loop_2:
@@ -75,9 +73,12 @@ _loop_2:
 
     loop _loop_2
 
-    call new_line
+    mov dl, 13
+    int 21h
+    mov dl, 10
+    int 21h
     
-    pop cx
+    mov cx, es
     
     loop _loop_1
     ret
@@ -87,7 +88,8 @@ change_hash_tag proc public
     mov cl, ds:rows
     mov si, 0
 _loop_1:
-    push cx
+    mov es, cx
+
     mov cl, ds:cols
     mov di, si
     dec di
@@ -97,17 +99,17 @@ _loop_2:
 
 _continue_loop:
     inc si
-    ;loop _loop_2
-    dec cx
-    cmp cx, 0
-    jne _loop_2
+    loop _loop_2
+    ;dec cx
+    ;cmp cx, 0
+    ;jne _loop_2
 
-    pop cx
+    mov cx, es
     
-    ;loop _loop_1
-    dec cx
-    cmp cx, 0
-    jne _loop_1
+    loop _loop_1
+    ;dec cx
+    ;cmp cx, 0
+    ;jne _loop_1
 
     jmp return
 
@@ -222,11 +224,13 @@ start:
 
 _write:
     mov ds:[rows], al
-    call new_line
+    
+    mov dx, offset new_line_sym
+    mov ah, 09
+    int 21h
 
 read_col:
     mov dx, offset msg2
-    mov ah, 09
     int 21h
 
     mov ah, 08
@@ -237,7 +241,12 @@ read_col:
 
 _write_col:
     mov ds:[cols], al
-    call new_line
+    
+    mov dl, 13
+    mov ah, 02
+    int 21h
+    mov dl, 10
+    int 21h
 
     call read_matrix
 
