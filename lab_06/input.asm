@@ -17,8 +17,10 @@ data_seg segment para common 'data'
     db "3: decimal to hexadicimal", 13, 10
     db "4: Exit", 13, 10, '$'
     num_msg db "Number: $"
-    octal db "Octal Number: ", "......", '$'
-    hexa_dicimal db "hexadecimal number: ",".....$"
+    octal db "Octal Number: "
+    db 7 dup('$')
+    hexa_dicimal db "hexadecimal number: "
+    db 6 dup('$')
     binary db "Binary number: "
     db 18 dup('$')
     uint_16 db 20
