@@ -9,8 +9,14 @@ extern binary:byte
 extern octal:byte
 extern hexa_dicimal:byte
 
-pass_print_arg macro param
+print_result macro param
     mov bx, param
+    call print
+endm
+
+check_over_flow macro
+    cmp [over_flow], 1
+    je incorect_input
 endm
 
 data_seg segment para common 'data'
@@ -32,37 +38,33 @@ code_seg segment para public 'code'
 call_binary:
     call unsigned_inp
 
-    cmp [over_flow], 1
-    je incorect_input
+    check_over_flow
     
     call to_binary
     
-    pass_print_arg offset binary
-    call print
+    print_result offset binary
     
     jmp start_menu
 
 call_octal:
     call signed_inp
 
-    cmp [over_flow], 1
-    je incorect_input
-    
+    check_over_flow
+
     call to_octal
-    pass_print_arg offset octal
-    call print
+
+    print_result offset octal
     
     jmp start_menu
 
 call_hexadecimal:
     call signed_inp
 
-    cmp [over_flow], 1
-    je incorect_input
+    check_over_flow
 
     call to_hexadeciaml
-    pass_print_arg offset hexa_dicimal
-    call print
+    
+    print_result offset hexa_dicimal
 
     jmp start_menu
 

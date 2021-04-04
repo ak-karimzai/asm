@@ -11,11 +11,11 @@ data_seg segment para common 'data'
     sign db 0
     number dw 0
     new_line db 13, 10, '$'
-    incorect_msg db "Incorect Input!", 13, 10, '$'
-    msg db "1: decimal to octal.", 13, 10
-    db "2: unsigned to binary.", 13, 10
-    db "3: decimal to hexadicimal", 13, 10
-    db "4: Exit", 13, 10, '$'
+    incorect_msg db "Incorect Input!", 10, '$'
+    msg db 10, 10, "1: decimal to octal.", 10
+    db "2: unsigned to binary.", 10
+    db "3: decimal to hexadicimal", 10
+    db "4: Exit", 10, '$'
     num_msg db "Number: $"
     octal db "Octal Number: "
     db 7 dup('$')
@@ -43,15 +43,15 @@ start:
             mov ah, 10
             int 21h
             ret
-            _zero_buffer:
-                xor cx, cx
-                mov cl, 20
-                mov si, 0
-                _put_dollar_sign:
-                    mov [uint_16 + si], '.'
-                    inc si
-                    loop _put_dollar_sign
-                jmp start_func
+        _zero_buffer:
+            xor cx, cx
+            mov cl, 20
+            mov si, 0
+            _put_dot_sign:
+                mov [uint_16 + si], '.'
+                inc si
+                loop _put_dot_sign
+            jmp start_func
     input endp
 
     ; signed number input
@@ -79,7 +79,7 @@ start:
         mov es, dx
 
         mov ax, di
-        mul bx
+        imul bx
 
         jc err_input
 
@@ -88,12 +88,12 @@ start:
         mov di, ax
         sub dx, '0'
         add di, dx
-
+        
         inc si
         loop _check_input
 
         cmp [uint_16 + 2], '-'
-        je add_last_bit
+        je add_sign
 
         jmp return
 
@@ -111,14 +111,8 @@ start:
 
         jmp _check_input
 
-    add_last_bit:
-        add di, 8000h
-        
-        jc err_input
-
-        mov [sign], 1
-        sub di, 8000h
-
+    add_sign:
+        neg di
         jmp return
 
     err_input:
@@ -162,6 +156,8 @@ start:
         mov di, ax
         sub dx, '0'
         add di, dx
+        
+        jc err_input
 
         inc si
         loop _check_input

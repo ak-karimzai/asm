@@ -1,10 +1,10 @@
 public to_octal
-extern number:word
-extern sign:byte
-extern binary:byte
-extern octal:byte
-extern hexa_dicimal:byte
-extern new_line:byte
+extern number: word
+extern sign: byte
+extern binary: byte
+extern octal: byte
+extern hexa_dicimal: byte
+extern new_line: byte
 
 code_seg segment para public 'code'
     assume cs:code_seg
@@ -33,6 +33,9 @@ to_octal proc near
     jmp put_dot
 _start:
     mov ax, [number]
+    cmp ax, 0
+    jl write_sign_flag
+_lable:
     mov bx, 08
     mov si, 19
     jmp _check
@@ -62,12 +65,19 @@ return:
             inc si
             loop write_dot
         jmp _start
+    write_sign_flag:
+        mov [sign], 1
+        neg ax
+        jmp _lable
 to_octal endp
 
 to_hexadeciaml proc near
     jmp put_dot
     _start:
     mov ax, [number]
+    cmp ax, 0
+    jl write_sign_flag
+_lable:
     mov bx, 16
     mov si, 24
     jmp _check
@@ -104,6 +114,10 @@ return:
                 inc si
                 loop write_dot
         jmp _start
+    write_sign_flag:
+        mov [sign], 1
+        neg ax
+        jmp _lable
 to_hexadeciaml endp
 code_seg ends
     end start
