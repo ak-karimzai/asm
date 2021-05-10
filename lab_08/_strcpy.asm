@@ -9,4 +9,4 @@ _strcpy:
     stosb
     jnz _strcpy
     lea rax, [rdx]
-    ret 
+    ret
