@@ -6,15 +6,21 @@ extern char* _strcpy(char *dst, const char *src);
 
 size_t _strlen(const char *str)
 {
+    size_t len = 0;
     __asm__(
-        "xor rax, rax\n\t"
-        "mov rcx, -1\n\t"
-        "cld\n\t"
-        "repnz scasb\n\t"
-        "not rcx\n\t"
-        "dec rcx\n\t"
-        "mov eax, ecx\n\t"
+        "\n\t xor rax, rax"
+        "\n\t mov rcx, -1"
+        "\n\t mov rdi, %1"
+        "\n\t cld"
+        "\n\t repnz scasb"
+        "\n\t not rcx"
+        "\n\t dec rcx"
+        "\n\t mov %0, rcx"
+        : "=r" (len)
+        : "r" (str)
+        : "rax", "rcx", "rdi"
     );
+    return len;
 }
 
 void test_strcpy(char *dst, const char *src)
@@ -29,7 +35,6 @@ void test_strcpy(char *dst, const char *src)
 
 void test_strlen(const char *str)
 {
-    assert(_strlen(str) == strlen(str));
     printf("%lu == %lu\n", _strlen(str), strlen(str));
     printf("%s passed\n", __func__);
 }
