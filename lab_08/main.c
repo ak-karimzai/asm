@@ -8,7 +8,6 @@ size_t _strlen(const char *str)
 {
     size_t len = 0;
     __asm__(
-        "\n\t xor rax, rax"
         "\n\t mov rcx, -1"
         "\n\t mov rdi, %1"
         "\n\t cld"
@@ -18,7 +17,7 @@ size_t _strlen(const char *str)
         "\n\t mov %0, rcx"
         : "=r" (len)
         : "r" (str)
-        : "rax", "rcx", "rdi"
+        : "rcx", "rdi"
     );
     return len;
 }

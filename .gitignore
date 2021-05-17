@@ -46,6 +46,7 @@
 *.COM
 *.OBJ
 *.EXE
+*.s
 
 # Kernel Module Compile Results
 *.mod*
