@@ -41,11 +41,11 @@ float asm_dot_product(const float *lhs, const float *rhs, size_t size)
         "\n\t _end:"
         "\n\t\t test rax, rax"
         "\n\t\t jz _return"
-        "\n\t\t dec rax"
         "\n\t\t movss xmm1, [rsi + rcx]"
         "\n\t\t movss xmm2, [rdi + rcx]"
         "\n\t\t mulss xmm1, xmm2"
         "\n\t\t addss xmm0, xmm1"
+        "\n\t\t dec rax"
         "\n\t\t jmp _end"
         "\n\t _return:"
         "\n\t\t movss %0, xmm0"
@@ -72,7 +72,7 @@ double get_function_excec_time(const float *lhs, const float *rhs, \
     clock_t start;
     start = clock();
     for (int i = 0; i < 1000; i++)
-        *res = func(lhs, rhs, N_MAX);
+        *res = func(lhs, rhs, 1);
     return ((double) clock() - start) / CLOCKS_PER_SEC;
 }
 
