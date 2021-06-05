@@ -45,6 +45,7 @@ float asm_dot_product(const float *lhs, const float *rhs, size_t size)
         "\n\t\t movss xmm2, [rdi + rcx]"
         "\n\t\t mulss xmm1, xmm2"
         "\n\t\t addss xmm0, xmm1"
+        "\n\t\t add rcx, 4"
         "\n\t\t dec rax"
         "\n\t\t jmp _end"
         "\n\t _return:"
@@ -66,13 +67,13 @@ static inline void make_radnom_arrays(float *fst, float *snd)
 }
 
 double get_function_excec_time(const float *lhs, const float *rhs, \
-                                float (*func)(const float *, const float *, size_t), \
-                                float *res)
+                               float (*func)(const float *, const float *, size_t), \
+                               float *res)
 {
     clock_t start;
     start = clock();
     for (int i = 0; i < 1000; i++)
-        *res = func(lhs, rhs, 1);
+        *res = func(lhs, rhs, N_MAX);
     return ((double) clock() - start) / CLOCKS_PER_SEC;
 }
 

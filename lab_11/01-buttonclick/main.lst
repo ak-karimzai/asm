@@ -1,0 +1,231 @@
+     1                                  ; Name        : buttonclick.asm
+     2                                  ;
+     3                                  ; Build       : nasm -felf64 -o buttonclick.o -l buttonclick.lst buttonclick.asm
+     4                                  ;               ld -s -m elf_x86_64 buttonclick.o -o buttonclick -lc --dynamic-linker /lib64/ld-linux-x86-64.so.2 `pkg-config --libs gtk+-2.0`
+     5                                  ; Description : events and signals intro
+     6                                  ;
+     7                                  ; Remark      : run this program from a terminal
+     8                                  ;
+     9                                  ; C - source  : http://zetcode.com/tutorials/gtktutorial/gtkevents/
+    10                                  ; asm - source: https://github.com/agguro/gtk-programming
+    11                                  ;
+    12                                  
+    13                                  bits 64
+    14                                  
+    15                                  [list -]
+    47                                  
+    48                                  section .data
+    49                                  
+    50                                       window:
+    51 00000000 0000000000000000             .handle:  dq   0
+    52 00000008 47746B427574746F6E-          .title:   db   "GtkButton", 0
+    52 00000011 00                 
+    53                                       
+    54                                       fixed:
+    55 00000012 0000000000000000             .handle:  dq   0
+    56                                       
+    57                                       button:
+    58 0000001A 0000000000000000             .handle:  dq   0
+    59 00000022 436C69636B00                 .label:   db   "Click", 0
+    60                                       button_new:
+    61 00000028 0000000000000000             .handle:  dq   0
+    62 00000030 41646400                     .label:   db   "Add", 0
+    63                                  
+    64                                       res_label:
+    65 00000034 0000000000000000             .handle:  dq   0
+    66 0000003C 300000000000000000-          .label:   dq   "0", 0
+    66 00000045 00000000000000     
+    67                                  
+    68 0000004C 5265733A2025640000-          float_format dq "Res: %d", 0
+    68 00000055 00000000000000     
+    69                                       
+    70                                       spin_a:
+    71 0000005C 0000000000000000                  .handle dq 0
+    72                                  
+    73                                       spin_b:
+    74 00000064 0000000000000000                  .handle dq 0
+    75                                       
+    76 0000006C 0000000000000000             res_str:   dq 0
+    77                                       signal:
+    78 00000074 636C69636B656400             .clicked: db   "clicked", 0
+    79 0000007C 64657374726F7900             .destroy: db   "destroy", 0
+    80                                       
+    81                                       message:
+    82 00000084 436C69636B65640A00           .clicked: db   "Clicked", 10, 0
+    83                                       
+    84                                  section .text
+    85                                       global _start
+    86                                  _start:
+    87                                  
+    88 00000000 4831FF                       xor       rdi, rdi                      ; no commandline arguments will be passed
+    89 00000003 4831F6                       xor       rsi, rsi
+    90 00000006 E8(00000000)                 call      gtk_init
+    91                                  
+    92 0000000B BF00000000                   mov       rdi, GTK_WINDOW_TOPLEVEL
+    93 00000010 E8(00000000)                 call      gtk_window_new
+    94 00000015 48890425[00000000]           mov       qword[window.handle], rax
+    95                                       
+    96 0000001D 48BE-                        mov       rsi, window.title
+    96 0000001F [0800000000000000] 
+    97 00000027 488B3C25[00000000]           mov       rdi, qword[window.handle]
+    98 0000002F E8(00000000)                 call      gtk_window_set_title
+    99                                       
+   100 00000034 BAC8000000                   mov       rdx, 200
+   101 00000039 BE04010000                   mov       rsi, 260
+   102 0000003E 488B3C25[00000000]           mov       rdi, qword[window.handle]
+   103 00000046 E8(00000000)                 call      gtk_window_set_default_size
+   104                                       
+   105 0000004B BE01000000                   mov       rsi, GTK_WIN_POS_CENTER
+   106 00000050 488B3C25[00000000]           mov       rdi, qword[window.handle]
+   107 00000058 E8(00000000)                 call      gtk_window_set_position
+   108                                  
+   109 0000005D E8(00000000)                 call      gtk_fixed_new
+   110 00000062 48890425[12000000]           mov       qword[fixed.handle], rax
+   111                                       
+   112 0000006A 488B3425[12000000]           mov       rsi, qword[fixed.handle]
+   113 00000072 488B3C25[00000000]           mov       rdi, qword[window.handle]
+   114 0000007A E8(00000000)                 call      gtk_container_add
+   115                                  
+   116 0000007F 48BF-                        mov       rdi, button_new.label
+   116 00000081 [3000000000000000] 
+   117 00000089 E8(00000000)                 call      gtk_button_new_with_label
+   118 0000008E 48890425[28000000]           mov       qword[button_new.handle], rax
+   119                                       
+   120 00000096 B996000000                   mov       rcx, 150
+   121 0000009B BA46000000                   mov       rdx, 70
+   122 000000A0 488B3425[28000000]           mov       rsi, qword[button_new.handle]
+   123 000000A8 488B3C25[12000000]           mov       rdi, qword[fixed.handle]
+   124 000000B0 E8(00000000)                 call      gtk_fixed_put
+   125                                       
+   126 000000B5 BA23000000                   mov       rdx, 35
+   127 000000BA BE64000000                   mov       rsi, 100
+   128 000000BF 488B3C25[28000000]           mov       rdi, qword[button_new.handle]
+   129 000000C7 E8(00000000)                 call      gtk_widget_set_size_request
+   130                                  
+   131                                  
+   132 000000CC 48BF000000000000E0-          mov       rdi, __?float64?__(-2147483648.0)
+   132 000000D5 C1                 
+   133 000000D6 66480F6EC7                   movq      XMM0, rdi
+   134 000000DB 48BE0000C0FFFFFFDF-          mov       rsi, __?float64?__(+2147483647.0)
+   134 000000E4 41                 
+   135 000000E5 66480F6ECE                   movq      XMM1, rsi
+   136 000000EA 48BA000000000000F0-          mov       rdx, __?float64?__(1.0)
+   136 000000F3 3F                 
+   137 000000F4 66480F6ED2                   movq      XMM2, rdx
+   138 000000F9 E8(00000000)                 call      gtk_spin_button_new_with_range 
+   139 000000FE 48890425[5C000000]           mov       qword[spin_a.handle], rax
+   140                                  
+   141 00000106 B914000000                   mov       rcx, 20
+   142 0000010B BA08000000                   mov       rdx, 8
+   143 00000110 488B3425[5C000000]           mov       rsi, qword[spin_a.handle]
+   144 00000118 488B3C25[12000000]           mov       rdi, qword[fixed.handle]
+   145 00000120 E8(00000000)                 call      gtk_fixed_put
+   146                                       
+   147 00000125 BA00000000                   mov       rdx, 0
+   148 0000012A BEFA000000                   mov       rsi, 250
+   149 0000012F 488B3C25[5C000000]           mov       rdi, qword[spin_a.handle]
+   150 00000137 E8(00000000)                 call      gtk_widget_set_size_request
+   151                                  
+   152 0000013C 48BF000000000000E0-          mov       rdi, __?float64?__(-2147483648.0)
+   152 00000145 C1                 
+   153 00000146 66480F6EC7                   movq      XMM0, rdi
+   154 0000014B 48BE0000C0FFFFFFDF-          mov       rsi, __?float64?__(+2147483647.0)
+   154 00000154 41                 
+   155 00000155 66480F6ECE                   movq      XMM1, rsi
+   156 0000015A 48BA000000000000F0-          mov       rdx, __?float64?__(1.0)
+   156 00000163 3F                 
+   157 00000164 66480F6ED2                   movq      XMM2, rdx
+   158 00000169 E8(00000000)                 call      gtk_spin_button_new_with_range 
+   159 0000016E 48890425[64000000]           mov       qword[spin_b.handle], rax
+   160                                  
+   161 00000176 B93C000000                   mov       rcx, 60
+   162 0000017B BA08000000                   mov       rdx, 8
+   163 00000180 488B3425[64000000]           mov       rsi, qword[spin_b.handle]
+   164 00000188 488B3C25[12000000]           mov       rdi, qword[fixed.handle]
+   165 00000190 E8(00000000)                 call      gtk_fixed_put
+   166                                       
+   167 00000195 BA00000000                   mov       rdx, 0
+   168 0000019A BEFA000000                   mov       rsi, 250
+   169 0000019F 488B3C25[64000000]           mov       rdi, qword[spin_b.handle]
+   170 000001A7 E8(00000000)                 call      gtk_widget_set_size_request
+   171                                  
+   172 000001AC E8(00000000)                 call      gtk_label_new
+   173 000001B1 48890425[34000000]           mov       qword[res_label.handle], rax
+   174                                  
+   175 000001B9 488B3C25[34000000]           mov       rdi,qword[res_label.handle]
+   176 000001C1 48BE-                        mov       rsi,res_label.label
+   176 000001C3 [3C00000000000000] 
+   177 000001CB E8(00000000)                 call      gtk_label_set_text
+   178 000001D0 B964000000                   mov       rcx, 100
+   179 000001D5 BA14000000                   mov       rdx, 20
+   180 000001DA 488B3425[34000000]           mov       rsi, qword[res_label.handle]
+   181 000001E2 488B3C25[12000000]           mov       rdi, qword[fixed.handle]
+   182 000001EA E8(00000000)                 call      gtk_fixed_put
+   183                                       
+   184 000001EF BA23000000                   mov       rdx, 35
+   185 000001F4 BEC8000000                   mov       rsi, 200
+   186 000001F9 488B3C25[34000000]           mov       rdi, qword[res_label.handle]
+   187 00000201 E8(00000000)                 call      gtk_widget_set_size_request
+   188                                       
+   189 00000206 4531C9                       xor       r9d, r9d
+   190 00000209 4531C0                       xor       r8d, r8d
+   191 0000020C B900000000                   mov       rcx, NULL
+   192 00000211 48BA-                        mov       rdx, button_clicked
+   192 00000213 [7802000000000000] 
+   193 0000021B 48BE-                        mov       rsi, signal.clicked
+   193 0000021D [7400000000000000] 
+   194 00000225 488B3C25[28000000]           mov       rdi, qword[button_new.handle]
+   195 0000022D E8(00000000)                 call      g_signal_connect_data
+   196                                  
+   197 00000232 4531C9                       xor       r9d, r9d
+   198 00000235 4531C0                       xor       r8d, r8d
+   199 00000238 B900000000                   mov       rcx, NULL
+   200 0000023D 48BA-                        mov       rdx, gtk_main_quit
+   200 0000023F [0000000000000000] 
+   201 00000247 48BE-                        mov       rsi, signal.destroy
+   201 00000249 [7C00000000000000] 
+   202 00000251 488B3C25[00000000]           mov       rdi, qword[window.handle]
+   203 00000259 E8(00000000)                 call      g_signal_connect_data
+   204                                  
+   205 0000025E 488B3C25[00000000]           mov       rdi, qword[window.handle]
+   206 00000266 E8(00000000)                 call      gtk_widget_show_all
+   207                                  
+   208 0000026B E8(00000000)                 call      gtk_main
+   209                                       
+   210 00000270 4831FF                       xor       rdi, rdi
+   211 00000273 E8(00000000)                 call      exit
+   212                                  
+   213                                  button_clicked:
+   214 00000278 56                          push  rsi
+   215                                  
+   216 00000279 660FEFC0                    pxor        xmm0, xmm0
+   217 0000027D 660FEFC9                    pxor        xmm1, xmm1
+   218                                  
+   219 00000281 488B3C25[5C000000]          mov         rdi, qword[spin_a]
+   220 00000289 E8(00000000)                call        gtk_spin_button_get_value_as_int
+   221 0000028E 4889C2                      mov         rdx, rax
+   222                                  
+   223 00000291 488B3C25[64000000]          mov         rdi, qword[spin_b]
+   224 00000299 E8(00000000)                call        gtk_spin_button_get_value_as_int
+   225                                  
+   226 0000029E 4801C2                      add         rdx, rax
+   227                                  
+   228 000002A1 4889D1                      mov         rcx, rdx
+   229 000002A4 4889CE                      mov         rsi, rcx
+   230 000002A7 B801000000                  mov         rax, 1
+   231 000002AC 48BF-                       mov         rdi, float_format
+   231 000002AE [4C00000000000000] 
+   232 000002B6 E8(00000000)                call        g_strdup_printf
+   233 000002BB 48890425[6C000000]          mov         [res_str],  rax
+   234                                  
+   235 000002C3 488B3C25[34000000]          mov         rdi, qword[res_label.handle]
+   236 000002CB 488B3425[6C000000]          mov         rsi, [res_str]
+   237 000002D3 E8(00000000)                call        gtk_label_set_text
+   238                                  
+   239 000002D8 488B3C25[6C000000]          mov         rdi, [res_str]
+   240 000002E0 E8(00000000)                call        g_free
+   241 000002E5 48C70425[6C000000]-         mov         qword[res_str], 0
+   241 000002ED 00000000           
+   242                                  
+   243 000002F1 5E                          pop  rsi
+   244 000002F2 C3                          ret
